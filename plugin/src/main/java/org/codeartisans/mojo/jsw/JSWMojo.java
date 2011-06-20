@@ -49,10 +49,10 @@ public class JSWMojo
      */
     private boolean skip;
     /**
-     * @parameter expression="${assembleDirectory}" default-value="${project.build.directory}/jsw"
+     * @parameter expression="${outputDirectory}" default-value="${project.build.directory}/jsw"
      * @required
      */
-    private File assembleDirectory;
+    private File outputDirectory;
     /**
      * @parameter
      */
@@ -296,7 +296,7 @@ public class JSWMojo
             throws MojoExecutionException
     {
         try {
-            JSW.extractInto( assembleDirectory );
+            JSW.extractInto( outputDirectory );
         } catch ( IOException ex ) {
             throw new MojoExecutionException( "Unable to deploy JSW tree", ex );
         }
@@ -312,7 +312,7 @@ public class JSWMojo
         // The repo where the jar files will be installed
         ArtifactRepository artifactRepository = artifactRepositoryFactory.createDeploymentArtifactRepository(
                 project.getArtifactId(),
-                "file://" + assembleDirectory.getAbsolutePath() + "/lib",
+                "file://" + outputDirectory.getAbsolutePath() + "/lib",
                 artifactRepositoryLayout,
                 false );
         List<String> classPaths = new ArrayList<String>();
@@ -345,8 +345,8 @@ public class JSWMojo
             throws MojoExecutionException
     {
         try {
-            JSW.generateWrapperConfiguration( assembleDirectory, eachService );
-            JSW.generateWrapperUnixScript( assembleDirectory, eachService );
+            JSW.generateWrapperConfiguration( outputDirectory, eachService );
+            JSW.generateWrapperUnixScript( outputDirectory, eachService );
         } catch ( IOException ex ) {
             throw new MojoExecutionException( "Unable to deploy service: " + eachService.getDaemonName(), ex );
         }
@@ -357,7 +357,7 @@ public class JSWMojo
             throws MojoExecutionException
     {
         try {
-            FileUtils.forceDelete( new File( assembleDirectory, "src" ) );
+            FileUtils.forceDelete( new File( outputDirectory, "src" ) );
         } catch ( IOException ex ) {
             throw new MojoExecutionException( "Unable to clean up JSW tree", ex );
         }
