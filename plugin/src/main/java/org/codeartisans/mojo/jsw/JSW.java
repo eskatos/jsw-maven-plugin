@@ -15,7 +15,6 @@ package org.codeartisans.mojo.jsw;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,44 +51,43 @@ public final class JSW
         } ) ) {
             FileUtils.forceDelete( eachBin );
         }
-        File conf = new File( destDir, "conf" );
-        FileUtils.forceDelete( new File( conf, "wrapper.conf" ) );
-        FileUtils.forceDelete( new File( conf, "demoapp.conf" ) );
+        FileUtils.forceDelete( new File( destDir, "conf" ) );
         FileUtils.forceDelete( new File( destDir, "doc" ) );
         FileUtils.forceDelete( new File( destDir, "jdoc" ) );
+        FileUtils.forceDelete( new File( destDir, "logs" ) );
         FileUtils.forceDelete( new File( destDir, "README_de.txt" ) );
         FileUtils.forceDelete( new File( destDir, "README_en.txt" ) );
         FileUtils.forceDelete( new File( destDir, "README_es.txt" ) );
         FileUtils.forceDelete( new File( destDir, "README_ja.txt" ) );
         File src = new File( destDir, "src" );
         FileUtils.forceDelete( new File( src, "conf" ) );
+
+        File var = new File( destDir, "var" );
+        FileUtils.forceMkdir( new File( var, "log" ) );
+        FileUtils.forceMkdir( new File( var, "run" ) );
     }
 
-    public static File generateWrapperConfiguration( File baseDir, JavaService service )
+    public static File generateWrapperConfiguration( File baseDir, String subDirname, JavaService service )
             throws IOException
     {
         StringWriter sw = new StringWriter();
         new AppWrapperConfWriter( service ).build( sw );
         String serviceConf = sw.toString();
-        File confDir = new File( baseDir, "conf" );
+        File confDir = new File( baseDir, subDirname );
+        FileUtils.forceMkdir( confDir );
         File serviceConfFile = new File( confDir, service.getDaemonName() + ".conf" );
         IOUtil.copy( new StringReader( serviceConf ), new FileOutputStream( serviceConfFile ) );
         Permissions.forceExecutable( serviceConfFile, true );
         return serviceConfFile;
     }
 
-    public static File generateWrapperUnixScript( File baseDir, JavaService service )
+    public static File generateWrapperUnixScript( File baseDir, String subDirname, JavaService service )
             throws IOException
     {
-        File shTemplateFile = new File( baseDir, "src/bin/sh.script.in" );
         StringWriter sw = new StringWriter();
-        IOUtil.copy( new FileReader( shTemplateFile ), sw );
-        String shTemplate = sw.toString();
-        sw = new StringWriter();
-        new AppWrapperUnixWriter( shTemplate, service ).build( sw );
+        new AppWrapperUnixWriter( subDirname, service ).build( sw );
         String shContent = sw.toString();
-        File bin = new File( baseDir, "bin" );
-        File sh = new File( bin, service.getDaemonName() );
+        File sh = new File( new File( baseDir, "bin" ), service.getDaemonName() );
         IOUtil.copy( new StringReader( shContent ), new FileOutputStream( sh ) );
         Permissions.forceExecutable( sh, true );
         return sh;

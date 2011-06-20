@@ -141,6 +141,11 @@ public final class JavaService
         javaClassPaths.addAll( javaCPs );
     }
 
+    public void addJavaClassPathFirst( String javaCP )
+    {
+        addJavaClassPathsFirst( Collections.singleton( javaCP ) );
+    }
+
     public void addJavaClassPathsFirst( Collection<String> javaCPs )
     {
         List<String> newJavaClassPaths = new ArrayList<String>( javaCPs );

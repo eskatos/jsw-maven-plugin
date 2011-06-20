@@ -15,7 +15,6 @@ package org.codeartisans.mojo.jsw;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -93,6 +92,7 @@ public class JSWTest
         File destDir = new File( "target/config-extract" );
         JSW.extractInto( destDir );
         File confDir = new File( destDir, "conf" );
+        confDir.mkdirs();
         File wrapperConfFile = new File( confDir, "wrapper.conf" );
         IOUtil.copy( new StringReader( wrapperConf ), new FileOutputStream( wrapperConfFile ) );
 
@@ -107,13 +107,8 @@ public class JSWTest
         JSW.extractInto( destDir );
         JavaService config = newConfigInstance();
 
-        File shTemplateFile = new File( destDir, "src/bin/sh.script.in" );
         StringWriter sw = new StringWriter();
-        IOUtil.copy( new FileReader( shTemplateFile ), sw );
-        String shTemplate = sw.toString();
-
-        sw = new StringWriter();
-        new AppWrapperUnixWriter( shTemplate, config ).build( sw );
+        new AppWrapperUnixWriter( "etc", config ).build( sw );
         String shContent = sw.toString();
         System.out.println( shContent );
 

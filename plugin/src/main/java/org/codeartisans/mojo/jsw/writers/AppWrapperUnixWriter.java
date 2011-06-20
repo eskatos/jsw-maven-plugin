@@ -24,12 +24,12 @@ public class AppWrapperUnixWriter
 {
 
     private static final String TEMPLATE_RSRC = "sh.script.in";
-    private final String template;
+    private final String confDirname;
     private final JavaService config;
 
-    public AppWrapperUnixWriter( String shTemplate, JavaService config )
+    public AppWrapperUnixWriter( String confDirname, JavaService config )
     {
-        this.template = shTemplate;
+        this.confDirname = confDirname;
         this.config = config;
     }
 
@@ -40,6 +40,7 @@ public class AppWrapperUnixWriter
         IOUtil.copy( getClass().getResourceAsStream( TEMPLATE_RSRC ), sw );
         String template = sw.toString();
         String sh = template;
+        sh = sh.replaceAll( "@conf.dir@", confDirname );
         sh = sh.replaceAll( "@conf.name@", config.getDaemonName() );
         sh = sh.replaceAll( "@app.name@", config.getDaemonName() );
         sh = sh.replaceAll( "@app.long.name@", config.getAppName() );

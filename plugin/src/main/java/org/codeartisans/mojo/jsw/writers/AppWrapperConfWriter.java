@@ -145,21 +145,12 @@ public class AppWrapperConfWriter
         out.println();
 
         // App Arguments
-        if ( config.getAppArguments().isEmpty() ) {
-            // app.parameter cannot be empty so we use the app main class as a sample argument
+        for ( String eachAppArgument : config.getAppArguments() ) {
             out.print( "wrapper.app.parameter." );
             out.print( nextAppArgument );
             out.print( EQ );
-            out.println( config.getAppMainClass() );
+            out.println( eachAppArgument );
             nextAppArgument++;
-        } else {
-            for ( String eachAppArgument : config.getAppArguments() ) {
-                out.print( "wrapper.app.parameter." );
-                out.print( nextAppArgument );
-                out.print( EQ );
-                out.println( eachAppArgument );
-                nextAppArgument++;
-            }
         }
         out.println();
 

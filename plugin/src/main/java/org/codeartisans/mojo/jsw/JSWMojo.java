@@ -31,8 +31,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import org.codeartisans.mojo.jsw.config.JavaService;
-import org.codehaus.plexus.util.FileUtils;
 
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -53,6 +53,23 @@ public class JSWMojo
      * @required
      */
     private File outputDirectory;
+    /**
+     * @parameter default-value="etc"
+     */
+    private String configDirname;
+    /**
+     * @parameter default-value="true"
+     */
+    private boolean configDirInClasspath;
+    /**
+     * @parameter default-value="true"
+     */
+    private boolean copyConfigResources;
+    /**
+     * @parameter expression="${configResourcesDir}" default-value="${project.basedir}/src/main/config"
+     * @required
+     */
+    private File configResourcesDir;
     /**
      * @parameter
      */
@@ -87,12 +104,6 @@ public class JSWMojo
      * @readonly
      */
     private List<Artifact> artifacts;
-    /**
-     * @parameter expression="${localRepository}"
-     * @required
-     * @readonly
-     */
-    private ArtifactRepository localRepository;
     // Components ------------------------------------------------------------------------------------------------------
     /**
      * @component
@@ -132,6 +143,9 @@ public class JSWMojo
 
         List<String> projectClassPaths = deployArtifactRepository();
         getLog().info( "Artifacts repository deployed" );
+
+        copyConfigResources();
+        getLog().info( "Configuration resources copied" );
 
         for ( JavaService eachService : services ) {
             eachService.addJavaClassPaths( projectClassPaths );
@@ -217,6 +231,9 @@ public class JSWMojo
         if ( globals.isJavaLogGeneratedCommand() == null ) {
             globals.setJavaLogGeneratedCommand( defaults.isJavaLogGeneratedCommand() );
         }
+        if ( configDirInClasspath ) {
+            globals.addJavaClassPathFirst( ".." + File.separator + configDirname );
+        }
 
         // Apply app defaults
         if ( StringUtils.isEmpty( globals.getAppMainClass() ) ) {
@@ -248,7 +265,7 @@ public class JSWMojo
             service.setWrapperConsoleLogLevel( globals.getWrapperConsoleLogLevel() );
         }
         if ( StringUtils.isEmpty( service.getWrapperLogfile() ) ) {
-            service.setWrapperLogfile( "../logs/" + service.getDaemonName() + ".log.ROLLNUM" );
+            service.setWrapperLogfile( "../var/log/" + service.getDaemonName() + "-wrapper.log.ROLLNUM" );
         }
         if ( StringUtils.isEmpty( service.getWrapperLogfileFormat() ) ) {
             service.setWrapperLogfileFormat( globals.getWrapperLogfileFormat() );
@@ -274,6 +291,7 @@ public class JSWMojo
             service.setJavaLogGeneratedCommand( globals.isJavaLogGeneratedCommand() );
         }
         service.addJavaArgumentsFirst( globals.getJavaArguments() );
+        service.addJavaArgument( "-Dbasedir=../" );
         service.addJavaLibraryPathsFirst( globals.getJavaLibraryPaths() );
         service.addJavaClassPathsFirst( globals.getJavaClassPaths() );
 
@@ -336,8 +354,21 @@ public class JSWMojo
                 return "../lib/" + artifactRepository.pathOf( artifact );
             }
             return null;
-        } catch ( ArtifactInstallationException e ) {
-            throw new MojoExecutionException( "Failed to copy artifact.", e );
+        } catch ( ArtifactInstallationException ex ) {
+            throw new MojoExecutionException( "Failed to copy artifact.", ex );
+        }
+    }
+
+    private void copyConfigResources()
+            throws MojoExecutionException
+    {
+        try {
+            if ( copyConfigResources ) {
+                File confDir = new File( outputDirectory, configDirname );
+                FileUtils.copyDirectoryStructure( configResourcesDir, confDir );
+            }
+        } catch ( IOException ex ) {
+            throw new MojoExecutionException( "Failed to copy config resources", ex );
         }
     }
 
@@ -345,8 +376,8 @@ public class JSWMojo
             throws MojoExecutionException
     {
         try {
-            JSW.generateWrapperConfiguration( outputDirectory, eachService );
-            JSW.generateWrapperUnixScript( outputDirectory, eachService );
+            JSW.generateWrapperConfiguration( outputDirectory, configDirname, eachService );
+            JSW.generateWrapperUnixScript( outputDirectory, configDirname, eachService );
         } catch ( IOException ex ) {
             throw new MojoExecutionException( "Unable to deploy service: " + eachService.getDaemonName(), ex );
         }
