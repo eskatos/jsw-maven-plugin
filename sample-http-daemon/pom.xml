@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codeartisans.jsw-maven-plugin</groupId>
+    <artifactId>jsw-maven-plugin-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>sample-http-daemon</artifactId>
+  <name>${project.artifactId}</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codeartisans</groupId>
+        <artifactId>jsw-maven-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jsw</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <globals>
+                <environment>
+                  <HTTP_PORT>8080</HTTP_PORT>
+                </environment>
+                <wrapperDebug>true</wrapperDebug>
+                <javaLogGeneratedCommand>true</javaLogGeneratedCommand>
+              </globals>
+              <services>
+                <service>
+                  <appName>sample-http-daemon-${project.version}</appName>
+                  <appMainClass>org.codeartisans.mojo.jsw.http.Main</appMainClass>
+                  <daemonName>sample-http-daemon</daemonName>
+                </service>
+              </services>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>sample-http-daemon-assembly</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/dist.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
