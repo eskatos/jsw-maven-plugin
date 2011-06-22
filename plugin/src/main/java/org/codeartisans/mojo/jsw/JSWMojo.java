@@ -50,7 +50,6 @@ public class JSWMojo
     private boolean skip;
     /**
      * @parameter expression="${outputDirectory}" default-value="${project.build.directory}/jsw"
-     * @required
      */
     private File outputDirectory;
     /**
@@ -67,9 +66,15 @@ public class JSWMojo
     private boolean copyConfigResources;
     /**
      * @parameter expression="${configResourcesDir}" default-value="${project.basedir}/src/main/config"
-     * @required
      */
     private File configResourcesDir;
+    /**
+     * The layout of the generated Maven repository. Supported types - "default" (Maven2) | "legacy" (Maven1) | "flat"
+     * (flat <code>lib/</code> style).
+     *
+     * @parameter default-value="flat"
+     */
+    private String repositoryLayout;
     /**
      * @parameter
      */
@@ -78,13 +83,6 @@ public class JSWMojo
      * @parameter
      */
     private JavaService[] services;
-    /**
-     * The layout of the generated Maven repository. Supported types - "default" (Maven2) | "legacy" (Maven1) | "flat"
-     * (flat <code>lib/</code> style).
-     *
-     * @parameter default-value="flat"
-     */
-    private String repositoryLayout;
     // Context ---------------------------------------------------------------------------------------------------------
     /**
      * @parameter expression="${project}"
@@ -363,7 +361,7 @@ public class JSWMojo
             throws MojoExecutionException
     {
         try {
-            if ( copyConfigResources ) {
+            if ( copyConfigResources && configResourcesDir.exists() && configResourcesDir.isDirectory() ) {
                 File confDir = new File( outputDirectory, configDirname );
                 FileUtils.copyDirectoryStructure( configResourcesDir, confDir );
             }
